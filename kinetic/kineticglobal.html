@@ -1,0 +1,51 @@
+
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+      canvas {
+        border: 1px solid #9C9898;
+      }
+    </style>
+    <script src="http://www.html5canvastutorials.com/libraries/kinetic-v3.9.3.js"></script>
+    <script>
+    
+    var MyTest = {};
+    
+      window.onload = function() {
+        var stage = new Kinetic.Stage({
+          container: "container",
+          width: 578,
+          height: 200
+        });
+
+        MyTest.layer = new Kinetic.Layer();
+
+        MyTest.rect = new Kinetic.Rect({
+          x: 239,
+          y: 75,
+          width: 100,
+          height: 50,
+          fill: "#00D2FF",
+          stroke: "black",
+          strokeWidth: 4
+        });
+
+        // add the shape to the layer
+        MyTest.layer.add(MyTest.rect);
+
+        // add the layer to the stage
+        stage.add(MyTest.layer);
+      };
+
+    </script>
+  </head>
+  <body>
+    <div id="container"></div>
+  </body>
+</html>
+
