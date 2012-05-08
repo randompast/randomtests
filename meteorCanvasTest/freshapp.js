@@ -24,13 +24,8 @@ if (Meteor.is_client) {
           draggable: true
         });
 
-        MyTest.rect.on("dragend", function() {
-          if(Players.findOne({name: "Rect"}))
-          //MyTest.rect.attrs.x = 
-            console.log(Players.findOne({name: "Rect"}).xpos);
-
-          console.log(this);
-          Players.update({name: "Rect"}, {xpos: this.attrs.x});
+        MyTest.rect.on("dragmove", function() {
+          Players.update({name: "Rect"}, {$set: {xpos: this.attrs.x}});
         });
         // add the shape to the layer
         MyTest.layer.add(MyTest.rect);
@@ -38,6 +33,15 @@ if (Meteor.is_client) {
         // add the layer to the stage
         stage.add(MyTest.layer);
       };
+
+  Players.find().observe({
+    changed: function(new_doc, idx, old_doc) {
+      if(MyTest.rect) {
+        MyTest.rect.attrs.x = new_doc.xpos;
+        MyTest.layer.draw();
+      }
+    }                      
+  });
       
   Template.hello.greeting = function () {
     return "Welcome to freshapp.";
@@ -54,8 +58,10 @@ if (Meteor.is_client) {
 if (Meteor.is_server) {
   Meteor.startup(function () {
     // code to run on server at startup
-        if (Players.find().count() === 0) {
-      var names = ["Rect"];
+    if (Players.find().count() === 0) {
+      var names = ["Rect",
+                   "Rect1",
+                   "Rect2"];
       for (var i = 0; i < names.length; i++)
         Players.insert({name: names[i], xpos: 100});
     }
