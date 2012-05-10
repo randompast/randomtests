@@ -25,7 +25,7 @@ if (Meteor.is_client) {
         });
 
         MyTest.rect.on("dragmove", function() {
-          Players.update({name: "Rect"}, {$set: {xpos: this.attrs.x}});
+          Players.update({name: "Rect"}, {$set: {xpos: this.attrs.x, ypos: this.attrs.y}});
         });
         // add the shape to the layer
         MyTest.layer.add(MyTest.rect);
@@ -38,6 +38,7 @@ if (Meteor.is_client) {
     changed: function(new_doc, idx, old_doc) {
       if(MyTest.rect) {
         MyTest.rect.attrs.x = new_doc.xpos;
+        MyTest.rect.attrs.y = new_doc.ypos;
         MyTest.layer.draw();
       }
     }                      
@@ -63,7 +64,7 @@ if (Meteor.is_server) {
                    "Rect1",
                    "Rect2"];
       for (var i = 0; i < names.length; i++)
-        Players.insert({name: names[i], xpos: 100});
+        Players.insert({name: names[i], xpos: 100, ypos: 100});
     }
   });
 }
