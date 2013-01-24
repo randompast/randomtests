@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>three.js - JavaScript 3D library</title>
+		<style>
+			body {
+
+				background-color: #ffffff;
+
+				margin: 0px;
+				padding: 19px 0px 30px 180px;
+
+				font-family: 'inconsolata';
+				font-size: 15px;
+
+			}
+
+			h1 {
+				color: #444;
+				font-size: 25px;
+				font-weight: normal;
+
+				margin-top: 5px;
+				margin-bottom: 20px;
+			}
+
+			h2 {
+				color: #999;
+				font-size: 18px;
+				font-weight: normal;
+
+				margin-top: 12px;
+			}
+		  
+		  h3 {
+				color: #999;
+				font-size: 14px;
+				font-weight: normal;
+
+				margin-top: 12px;
+			}
+
+			a {
+				color: #2194CE;
+				font-size: 15px;
+			}
+
+			#panel	{
+
+				position: fixed;
+
+				left: 0px;
+				top: 0px;
+
+				width: 200px;
+				height: 100%;
+
+				padding: 20px 0px 0px 20px;
+
+			}
+
+			.images {
+
+				line-height: 0px;
+				margin-bottom: 40px;
+
+			}
+
+		</style>
+	</head>
+	<body>
+
+
+
+    <div id="three.js" class="images">
+		  <h2>Earth: </h2><h3>Learning three.js</h3>
+		  <div id="earth" class="images"></div>
+		  <script>
+
+		  var element = document.getElementById( 'earth' );
+
+			  element.innerHTML += '<a href="http://quantumfractal.info/three.js/earth/1/index.html" target="_blank"><img src="three.js/img/earth1.png" width="200" height="150"></a>';
+			  
+		  </script>
+		</div>
+
+
+
+    <div id="kinetic" class="images">
+
+		  <h2>MapMaker</h2><h3>Varying functionality, try: w, a, s, d, 1, 2, 3, 4, arrows, shift, scrollwheel.  Switching servers may have broken some things...</h3>
+		  <div id="mapmaker" class="images"></div>
+		  <script>
+
+		  var files = [
+
+			  "KineticJS-MapMaker",
+			  "MapMakerRemake"
+		  ];
+
+		  var element = document.getElementById( 'mapmaker' );
+
+		  for ( var i = 0; i < files.length; i ++ ) {
+
+			  var file = files[ i ];
+			  element.innerHTML += '<a href="kinetic/KineticJS_Map_Maker/' + file + '.html" target="_blank" title="'+file+'"><img src="kinetic/img/' + file + '.png" width="200" height="150"></a>';
+
+		  }
+		  
+		  var files = [
+
+			  "QImage-MapMaker",
+			  "QImage-MapMaker1.1",
+			  "QImage-MapMaker1.2",
+			  "QImage-MapMaker1.10",
+			  "QImage-MapMaker2",
+			  "QImage-MapMaker3.1",
+			  "QImage-MapMaker3",
+			  "grid8",
+			  "grid2"
+		  ];
+
+		  var element = document.getElementById( 'mapmaker' );
+
+		  for ( var i = 0; i < files.length; i ++ ) {
+
+			  var file = files[ i ];
+			  element.innerHTML += '<a href="kinetic/' + file + '.html" target="_blank" title="'+file+'"><img src="kinetic/img/' + file + '.png" width="200" height="150"></a>';
+
+		  }
+		  </script>
+
+		  
+		  <h2>Quick Kinetic Scripts</h2><h3>QImage plugin, sprites, random stars...</h3>
+		    <div id="early-kinetic" class="images"></div>
+		    <script>
+
+		    var files = [
+
+			    "FlipImage-Demo",
+			    "Graphing-Puzzle",
+			    "Grid-Drawing-Demo",
+			    "Grid-Image-Demo",
+			    "kineticglobal",
+			    "QImage",
+			    "QImage-Sprite-Demo",
+			    "QImage-Sprite-Demo2",
+			    "QImage-Sprite-Demo3",
+			    "QImage-Sprite-Demo4",
+			    "Squiggle-Demo",
+			    "Squiggle-Demo2",
+			    "Star-Fall-Demo",
+			    "Star-Field-Demo"
+
+		    ];
+
+		    var element = document.getElementById( 'early-kinetic' );
+
+		    for ( var i = 0; i < files.length; i ++ ) {
+
+			    var file = files[ i ];
+			    element.innerHTML += '<a href="kinetic/' + file + '.html" target="_blank" title="'+file+'"><img src="kinetic/img/' + file + '.png" width="200" height="150"></a>';
+
+		    }
+
+		    </script>
+    </div>
+
+
+
+    <div id="Profs" class="images">
+		  <h2>Profiles: </h2><h3>Some stuff</h3>
+		  <div id="blogs" class="images"></div>
+		  <script>
+
+		  var element = document.getElementById( 'blogs' );
+
+			  element.innerHTML += '<a href="http://qfractal.tumblr.com/" target="_blank"><img src="img/qftumblr.png" width="200" height="150"></a>';
+			  element.innerHTML += '<a href="http://quantumfractal.blogspot.com/" target="_blank"><img src="img/qfblogspot.png" width="200" height="150"></a>';
+			  
+		  </script>
+		</div>
+
+
+
+    <div id="DM" class="images">		
+		<h2>First Web Project:</h2><h3> D&D, dm screen</h3>
+		  <div id="dmscreen" class="images"></div>
+		  <script>
+
+		  var element = document.getElementById( 'dmscreen' );
+
+			  element.innerHTML += '<a href="http://quantumfractal.info/dmscreen/dmscreen/Tests3/battle.php" target="_blank"><img src="img/dmscreen3.png" width="200" height="150"></a>';
+			  element.innerHTML += '<a href="http://quantumfractal.info/dmscreen/dmscreen/Tests2/battle.php" target="_blank"><img src="img/dmscreen2.png" width="200" height="150"></a>';
+			  element.innerHTML += '<a href="http://quantumfractal.info/dmscreen/dmscreen/Tests/monster.php" target="_blank"><img src="img/dmscreen1.png" width="200" height="150"></a>';
+
+
+		  </script>
+	  </div>
+    
+    
+	</body>
+</html>
+

@@ -1,0 +1,21 @@
+1*****************
+let vsum a b c = (sum [0,a..c]) + ((sum [0,b..c]) - (sum [0,a*b..c])) in vsum 3 5 999
+
+2*****************
+let fibon :: (Integral a) => a -> a; fibon 1 = 1; fibon 2 = 2; fibon n = fibon (n - 1) + fibon (n - 2)
+sum (filter even (map fibon [1..33])) 
+
+let fibs = 0:1:zipWith (+) fibs (tail fibs) in fibs
+
+let fibs = 0:1:zipWith (+) fibs (tail fibs) in fibs !! 200
+sum . filter even . takeWhile (< n) $ fibs
+
+let aztec = zipWith (+) `ap` tail ; fibs = 0:1: aztec fibs in take 10 fibs
+
+(04:28:16 PM) Cale: -- > fib = Memo.integral fib'
+(04:28:16 PM) Cale: -- >    where
+(04:28:16 PM) Cale: -- >    fib' 0 = 0
+(04:28:17 PM) Cale: -- >    fib' 1 = 1
+(04:28:17 PM) Cale: -- >    fib' x = fib (x-1) + fib (x-2)
+
+3****************

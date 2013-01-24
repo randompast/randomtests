@@ -1,0 +1,256 @@
+<head>
+    <script src="http://www.html5canvastutorials.com/libraries/kinetic-v3.8.3.js">
+    </script>
+    <script type="text/javascript" src="kQuantumImage.js">
+    </script>
+    <script type="text/javascript" src="kquantumsquiggle.js">
+    </script>
+
+    <script> 
+        function loadImages(sources, callback){
+            var images = {};
+            var loadedImages = 0;
+            var numImages = 0;
+            for (var src in sources) {
+                numImages++;
+            }
+            for (var src in sources) {
+                images[src] = new Image();
+                images[src].onload = function(){
+                    if (++loadedImages >= numImages) {
+                        callback(images);
+                    }
+                };
+                images[src].src = sources[src];
+            }
+        }
+ 
+        function initStage(images){
+            var stage = new Kinetic.Stage("container", 640, 640);
+            var layer = new Kinetic.Layer();
+            var maplayer = new Kinetic.Layer();
+            var objectlayer = new Kinetic.Layer();
+            var tS = 32; 
+ 
+            // shipSprite
+            var shipSpriteImg = create_spaceShipSprite(tS, images);
+            layer.add(shipSpriteImg);
+
+
+            //Map (background)
+            var map = create_scrollable_background(tS, images);
+            maplayer.add(map);
+
+            //Obects (background)
+            var objects = new Array();
+            var gonnaRotate = new Array();
+            create_collideables(tS, objects, objectlayer, gonnaRotate);
+
+            stage.add(maplayer);  //only the order you add them to the stage determines which is on top
+            stage.add(objectlayer); //rockts,trees for collisions
+            stage.add(layer); 
+            stage.draw();
+
+            //This allows multiple keys to be pressed at the same time
+            var input = {};
+            document.addEventListener('keydown', function (e) {
+                var keyCode = e.which;
+                input[keyCode] = true;
+                if (keyCode == 38 || keyCode == 40 || keyCode == 32) e.preventDefault(); //disables page viewing
+            });
+            document.addEventListener('keyup', function (e) {
+                var keyCode = e.which;
+                input[keyCode] = false;
+            });
+
+            stage.onFrame(function(frame){//wasd, arrows
+                //The order here allows for down+left or right to have down's animation
+                //up is the reverse so if (left or right) and up are pressed, up isn't shown
+                var row = rowgrabber(input);
+                moveguy(row, 38, 87, 0,-1, input, shipSpriteImg, objects, map);//up, w
+                moveguy(row, 37, 65, -1,0, input, shipSpriteImg, objects, map);//left, a
+                moveguy(row, 39, 68, 1,0, input, shipSpriteImg, objects, map);//right, d
+                moveguy(row, 40, 83, 0,1, input, shipSpriteImg, objects, map);//down, s
+                objectsRotation(gonnaRotate);
+                defaultdir(shipSpriteImg); //checks to stand still
+                shipSpriteImg.count++; //make walk cycle sooner
+                stage.draw();
+            });
+
+            stage.start();
+        }
+
+        function objectsRotation(objects){
+          for(var i=0; i<objects.length; i++)
+            objects[i].rotate(Math.PI / 100);
+        }
+
+        function defaultdir(shipSpriteImg){
+          if(shipSpriteImg.count > 6)
+            {
+              shipSpriteImg.srcx = shipSpriteImg.col*shipSpriteImg.srcwidth; //switch to middle column
+              shipSpriteImg.count %= 6;
+            }
+        }
+
+        function rowgrabber(input){ //wasd or arrow keys, diagonal and orthogonal movement
+          if((input[38] || input[87]))//orthogonal
+            var row = 0;//up
+          if((input[39] || input[68]))
+            var row = 2;//right
+          if((input[40] || input[83]))
+            var row = 7;//down
+          if((input[37] || input[65]))
+            var row = 5;//left
+          if((input[38] || input[87]) && (input[39] || input[68]))//diagonals
+            var row = 1;
+          if((input[40] || input[83]) && (input[39] || input[68]))
+            var row = 3;
+          if((input[40] || input[83]) && (input[37] || input[65]))
+            var row = 6;
+          if((input[38] || input[87]) && (input[37] || input[65]))
+            var row = 4;
+          return row;
+        }
+
+        function moveguy(row, in1,in2, xfac, yfac, input, shipSpriteImg, objects, map){
+          if(input[in1] || input[in2]) //these are input values to be checked
+            { var tS = 32; var bgmov = 5; //tileSize, move the background
+              if(row === 1 || row === 3 || row === 4 || row === 6)
+                { xfac /= 1.4142135; yfac /= 1.4142135;} //Correct for UT movement bug
+              shipSpriteImg.srcy = shipSpriteImg.srcheight*row; //this changes the active row
+              shipSpriteImg.x += shipSpriteImg.speed*xfac; //-1,1,0 => left, right, stationary
+              shipSpriteImg.y += shipSpriteImg.speed*yfac; //-1,1,0 => up, down, stationary
+              if(shipSpriteImg.x > 20*tS)
+                {shipSpriteImg.x -= 21*tS; map.srcx += bgmov;}
+              if(shipSpriteImg.y > 20*tS)
+                {shipSpriteImg.y -= 21*tS; map.srcy += bgmov;}
+              if(shipSpriteImg.x < -tS)
+                {shipSpriteImg.x += 21*tS; map.srcx -= bgmov;}
+              if(shipSpriteImg.y < -tS)
+                {shipSpriteImg.y += 21*tS; map.srcy -= bgmov;}
+
+              var i = Math.floor((shipSpriteImg.x)/tS+1) //collisions were left shifted
+              var j = Math.floor((shipSpriteImg.y+2)/tS+1) //32 is the bG tile size
+              if(objects[j] && objects[j][i]) //don't allow movement if true
+              {
+                shipSpriteImg.x -= shipSpriteImg.speed*xfac; //-1,1,0 => left, right, stationary
+                shipSpriteImg.y -= shipSpriteImg.speed*yfac; //-1,1,0 => up, down, stationary
+                popquestion(objects,i,j);
+              }
+
+              if(shipSpriteImg.count > 3) //ready to change walk columns?
+                {
+                  shipSpriteImg.srcx += 2*shipSpriteImg.srcwidth; //first and last column
+                  if(shipSpriteImg.srcx >= shipSpriteImg.srcwidth*3) //overflow? start at srcx=0
+                    shipSpriteImg.srcx = 0;  //bring the walk cycle to the far left column
+                  shipSpriteImg.count %= 3; //start the count for the walk cycle over again
+                }
+            }
+        }
+
+        function popquestion(objects,i,j){
+          var stage = objects[j][i].getStage();
+          stage.stop();
+          objects[j][i].visible = false;
+          objects[j][i] = false;
+          startSound();
+          setTimeout(function() {stage.start();},50);
+        }
+
+        // some sound, try .wav?
+        var snd = new Audio('http://quantumfractal.info/test/sounds/15348__ch0cchi__bubble-pop.wav');
+
+        function playSound() {
+          var b = snd;
+            b.cloneNode(true).play();
+        }
+        function startSound() {
+          playSound();
+          count = 30;
+        }
+
+        function create_collideables(tS, objects, objectlayer, gonnaRotate){
+          for(var j=0; j<20; j++)
+            {
+              objects[j] = new Array();
+              for(var i=0; i<20; i++)
+              {
+                if(Math.floor(Math.random()*100)>90) //10%
+                {
+                  objects[j][i] = new Kinetic.QSquiggle({  //This sprite was 3x4 tiles
+                    x: tS*i+16,
+                    y: tS*j+16,
+                    points: Math.floor(Math.random()*8)+4,
+                    innerRadius: Math.floor(Math.random()*10)+20,
+                    outerRadius: -Math.floor(Math.random()*10)-30,
+                    fill: "yellow",
+                    stroke: "black",
+                    strokeWidth: 2,
+                  });
+
+                  //objects[j][i].draggable(true); //drag em? sure...
+                   // add the shape to the layer
+                  objectlayer.add(objects[j][i]);
+                  gonnaRotate.push(objects[j][i]);
+                }
+              } 
+            }
+        }
+
+        function create_scrollable_background(tS, images) //background
+        {
+          map = new Kinetic.QImage({
+              x: 0,
+              y: 0,
+              image: images.background,
+              width: tS*20,
+              height: tS*20,
+              name: "image",
+              srcx: tS*4, //x source position
+              srcy: tS*4, //y source position
+              srcwidth: tS*20, //source width
+              srcheight: tS*20, //source height
+          });
+            //map[j][i].draggable(true); //drag em? sure...
+             // add the shape to the layer
+          return map;
+        }
+
+        function create_spaceShipSprite(tS, images) //makeSprite
+        {
+            shipSpriteImg = new Kinetic.QImage({  //This sprite was 3x4 tiles
+                x: 320,
+                y: 320,
+                image: images.shipSprite,
+                width: tS*2,
+                height: tS*2,
+                name: "image",
+                srcx: 64*1, //x source position
+                srcy: 0, //y source position
+                srcwidth: 64, //source width
+                srcheight: 64, //source height
+            });
+            shipSpriteImg.col = 1; //this is where the default row is
+            shipSpriteImg.count = 6; //this stores when to move
+            shipSpriteImg.speed = 3;  //this is how fast the sprite moves
+            return shipSpriteImg;
+        }
+ 
+        window.onload = function(){
+            var sources = {
+                background: "tiletest/planet_2_0.png",
+                  //http://opengameart.org/content/4-large-planets
+                shipSprite: "tiletest/shipsprite1.png",
+                  //http://openclipart.org/detail/138565/spaceship-by-gustavorezende
+                  //Feel free to use the sprite I made based off of the openclipart image!
+            };
+            loadImages(sources, initStage);
+        };
+    </script>
+</head>
+<body onmousedown="return false;">
+    <div id="container">
+    </div>
+<?php include_once("../analyticstracking.php"); ?>
+</body>

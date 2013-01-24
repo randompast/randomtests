@@ -1,0 +1,28 @@
+.box {
+	width:32px; 
+	height:32px;
+	max-width:32px; 
+	max-height:32px; 
+	float:left;
+	text-align:center;
+	border-style:solid;
+	border-width:1px;
+	overflow-x:hidden;
+	overflow-y:hidden;
+}
+.trans {
+	opacity:0.2;
+}
+.row{
+	clear:both;
+}
+
+#tile{
+	max-width:32px; 
+	max-height:32px; 
+}
+
+a:link {color: #77aa22;text-decoration:none;}      /* unvisited link */
+a:visited {color: #447711;text-decoration:none;}  /* visited link */
+a:hover {color:#003366;text-decoration:underline;}  /* mouse over link */
+a:active {color:#006666;text-decoration:underline;}/* selected link */

@@ -1,0 +1,78 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <style>
+            body {
+                margin: 0px;
+                padding: 0px;
+            }
+            
+            #myCanvas {
+                border: 1px solid #9C9898;
+            }
+        </style>
+        <script>
+      var canvas;
+      var context;
+      
+      function init(){
+        canvas = document.getElementById("myCanvas");
+        context = canvas.getContext("2d");
+        drawLayer();
+        
+        canvas.addEventListener('mousemove', function(evt) {
+          var mousePos = getMousePos(canvas, evt);
+          var message = "Mouse position: " + mousePos.x + "," + mousePos.y;
+          document.getElementById("coordinates").value = message;
+        }, false);
+      }
+
+      function getMousePos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect(), root = document.documentElement;
+
+        // return relative mouse position
+        var mouseX = evt.clientX - rect.top - root.scrollTop;
+        var mouseY = evt.clientY - rect.left - root.scrollLeft;
+        return {
+          x: mouseX,
+          y: mouseY
+        };
+      }
+
+      function drawLayer() {
+        var size = 100;
+        var border = 0;
+        
+        
+        var imageObj = new Image();
+        imageObj.onload = function() {
+          for (var y = 0; y < 20; y++) {
+              for (var x = 0; x < 20; x++) {
+                  context.drawImage(imageObj, x * size + x * border, y * size + y * border, size, size);
+              }
+          }
+        };
+        imageObj.src = "http://www.html5canvastutorials.com/demos/assets/darth-vader.jpg";        
+      };
+      
+      var selection = function() {
+        
+      }
+
+      var clear = function(){
+          context.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
+        </script>
+    </head>
+    <body onload="init()" onmousedown="return false;">
+        <canvas id="myCanvas" width="600" height="600">
+        </canvas>
+        <textarea id="coordinates" rows="3" cols="30">
+        </textarea
+        <textarea id="coordinates" rows="3" cols="30">
+        </textarea>
+        <textarea id="Selction" rows="3" cols="30">
+        </textarea
+    </body>
+</html>

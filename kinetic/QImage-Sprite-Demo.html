@@ -1,0 +1,120 @@
+<head>
+    <script src="http://www.html5canvastutorials.com/libraries/kinetic-v3.8.3.js">
+    </script>
+    <script type="text/javascript" src="kQuantumImage.js">
+    </script>
+
+    <script> 
+        function loadImages(sources, callback){
+            var images = {};
+            var loadedImages = 0;
+            var numImages = 0;
+            for (var src in sources) {
+                numImages++;
+            }
+            for (var src in sources) {
+                images[src] = new Image();
+                images[src].onload = function(){
+                    if (++loadedImages >= numImages) {
+                        callback(images);
+                    }
+                };
+                images[src].src = sources[src];
+            }
+        }
+ 
+        function initStage(images){
+            var stage = new Kinetic.Stage("container", 800, 800);
+            var layer = new Kinetic.Layer();
+ 
+            // spaceGuy
+            var spaceGuyImg = new Kinetic.QImage({  //This sprite was 3x4 tiles
+                x: 0,
+                y: 0,
+                image: images.spaceGuy,
+                width: 150,
+                height: 150,
+                name: "image",
+                srcx: 32*1, //x source position
+                srcy: 36*2, //y source position
+                srcwidth: 32, //source width
+                srcheight: 36, //source height
+            });
+
+            spaceGuyImg.col = 1; //this is where the default row is
+            spaceGuyImg.count = 10; //this stores when to move
+            spaceGuyImg.speed = 3;  //this is how fast the sprite moves
+
+            layer.add(spaceGuyImg);
+            stage.add(layer); 
+ 
+            stage.draw();
+
+            //This allows multiple keys to be pressed at the same time
+            var input = {};
+            document.addEventListener('keydown', function (e) {
+                var keyCode = e.which;
+                input[keyCode] = true;
+                if (keyCode == 38 || keyCode == 40 || keyCode == 32) e.preventDefault(); //disables page viewing
+            });
+            document.addEventListener('keyup', function (e) {
+                var keyCode = e.which;
+                input[keyCode] = false;
+            });
+
+            stage.onFrame(function(frame){//wasd, arrows
+
+                //The order here allows for down+left or right to have down's animation
+                //up is the reverse so if (left or right) and up are pressed, up isn't shown
+                moveguy(0, 38, 87, 0,-1, input, spaceGuyImg);//up, w
+                moveguy(3, 37, 65, -1,0, input, spaceGuyImg);//left, a
+                moveguy(1, 39, 68, 1,0, input, spaceGuyImg);//right, d
+                moveguy(2, 40, 83, 0,1, input, spaceGuyImg);//down, s
+
+                defaultdir(spaceGuyImg); //checks to stand still
+                spaceGuyImg.count++; //make walk cycle sooner
+                stage.draw();
+            });
+
+            stage.start();
+        }
+
+        function defaultdir(spaceGuyImg){
+          if(spaceGuyImg.count > 12)
+            {
+              spaceGuyImg.srcx = spaceGuyImg.col*spaceGuyImg.srcwidth; //switch to middle column
+              spaceGuyImg.count %= 10;
+            }
+        }
+
+        function moveguy(row, in1,in2, xfac, yfac, input, spaceGuyImg){
+          if(input[in1] || input[in2]) //these are input values to be checked
+            {
+              spaceGuyImg.srcy = spaceGuyImg.srcheight*row; //this changes the row
+              spaceGuyImg.x += spaceGuyImg.speed*xfac; //-1,1,0 => left, right, stationary
+              spaceGuyImg.y += spaceGuyImg.speed*yfac; //-1,1,0 => up, down, stationary
+
+              if(spaceGuyImg.count > 10) //ready to change walk columns?
+                {
+                  spaceGuyImg.srcx += 2*spaceGuyImg.srcwidth; //first and last column
+                  if(spaceGuyImg.srcx >= spaceGuyImg.srcwidth*3) //overflow? start at srcx=0
+                    spaceGuyImg.srcx = 0;  //bring the walk cycle to the far left column
+                  spaceGuyImg.count %= 10; //start the count for the walk cycle over again
+                }
+            }
+        }
+ 
+        window.onload = function(){
+            var sources = {
+                spaceGuy: "tiletest/ranger_m.png"
+                    //http://opengameart.org/content/antifareas-rpg-sprite-set-1-enlarged-w-transparent-background
+            };
+            loadImages(sources, initStage);
+        };
+    </script>
+</head>
+<body onmousedown="return false;">
+    <div id="container">
+    </div>
+<?php include_once("../analyticstracking.php"); ?>
+</body>

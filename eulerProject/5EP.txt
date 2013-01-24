@@ -1,0 +1,1 @@
+prime factors of all numbers 1-20, make a set to map to each [1..20]

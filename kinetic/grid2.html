@@ -1,0 +1,173 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="restart.css" />
+<link rel="stylesheet" type="text/css" href="skel.css" />
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+var moving=2;
+var movecharacter;
+var lastindex; //click
+var currentindex;
+var lasthtml;
+var poofindex=2;
+var poofhtml=2;
+var movetoclick;
+var drawsize=3;
+var dim = 30;
+
+var bgpos=2;
+var bgs=new Array();
+bgs[1] = "http://www.sixtygig.com/public/style_emoticons/default/cobblestone_32px.png";
+bgs[2] = "http://img.photobucket.com/albums/v673/gomish/travnica2.png";
+bgs[3] = "http://www.excelcalcs.com/components/com_remository/images/folder_icons/wood.png";
+bgs[4] = "http://icons.iconarchive.com/icons/etherbrian/webuosities/32/table-icon.png";
+bgs[5] = "http://kngdragon.com/Images/wall_brick_normal_1.jpg";
+bgs[6] = "http://mazeguy.net/bigicons/cow.gif";
+bgs[7] = "http://a1k0n.net/code/texture/water/out0.png";
+bgs[8] = "http://a1k0n.net/code/texture/stone/out0.png";
+bgs[9] = "http://a1k0n.net/code/texture/snow/out0.png";
+bgs[10] = "http://a1k0n.net/code/texture/sand/out0.png";
+bgs[11] = "http://www.ars-grin.gov/ars/graphics/anilinks.gif";
+bgs[12] = "http://i708.photobucket.com/albums/ww81/Assman00-TheCheeks/Sprites/explode-air.gif";
+bgs[13] = "http://icons.iconarchive.com/icons/matthew-kelleigh/mac-town-vol2/32/Tree-1-icon.png";
+//http://www.videogamesprites.net/SeikenDensetsu3/Magic/  more neat images (requested to not link directly)
+var bgmax=bgs.length;
+
+function initializejq()
+{
+
+$(document).ready(function(e) {
+
+  $(".box").mousemove(function(event){ //highlighting
+    if (event.shiftKey) { //color background
+			var currentId = $(this).attr('id');
+			highlight(currentId,bgpos,1);
+    }  
+    	var currentId = $(this).attr('id'); //light blue border highlight
+			var color = "#00FFFF";
+			highlight(currentId,color,0);
+  }); //end highlighting
+
+  $(".box").click(function(){ //start move
+		if(moving==2){
+	    $(this).css("border-color","yellow");
+			yellowmove=true;
+			lastindex = $(this).attr('id');
+			lasthtml = document.getElementById(lastindex).innerHTML;
+			moving=1;
+		}
+		else
+		{
+			movetoclick = $(this).attr('id');
+	    $("#"+lastindex).css("border-color","black");
+			if(document.getElementById(poofindex).innerHTML==poofhtml)
+				document.getElementById(poofindex).innerHTML = '';
+			poofhtml = document.getElementById(lastindex).innerHTML = "*poof-"+movetoclick+"*";
+			document.getElementById(movetoclick).innerHTML = lasthtml;
+			moving=2;
+			poofindex = lastindex;
+		}
+  });//end move
+
+});//end .ready
+
+$(document).keydown(function(e){
+	if (e.which==109 || e.which==189 || e.which==90) //minus key "-" or z
+    {
+			if(drawsize>1)
+				drawsize -=2;
+			$("#drawsize").html("Drawsize: "+drawsize); 
+		}
+	if (e.which==107 || e.which==187 || e.which==88) //plus key "+" or x
+		{
+			drawsize +=2;
+			$("#drawsize").html("Drawsize: "+drawsize);
+		}
+
+		//control backgroung image position bgs[pos]
+    if (e.which==17) {
+			if(bgpos>0)
+				bgpos--;
+		$("#tile").html("Tile: "+bgpos);
+ 		$("#tile").css("background-image","url("+bgs[bgpos]+")");
+    } 
+    if (e.which==18) {
+			if(bgpos<bgmax)
+				bgpos++;
+		$("#tile").html("Tile: "+bgpos);
+ 		$("#tile").css("background-image","url("+bgs[bgpos]+")");
+    }
+
+}); //end key events
+
+	$("#tile").css("background-image","url("+bgs[bgpos]+")"); //show start tile
+	$("#30").html("<img src='"+bgs[13]+"'>");
+
+
+}//end initialize
+
+function highlight(id,col,bgbd)
+{
+		var dpos = (drawsize - 1)/2;
+		var topleft = id - dim*dpos - dpos;
+		var i,j;
+		var index;
+		lastindex2=id; //move
+
+	if(bgbd == 0)
+	{ //make borders black again 1-end
+		for(index=1; index<=dim*dim;index++)		
+		{
+   		$("#"+index).css("border-color","black");
+		}
+	}
+
+	for(j=0; j<drawsize;j++)  
+	{
+		for(i=0; i<drawsize;i++)
+		{
+			index = topleft+i+j*dim;
+			if(bgbd == 1)
+    		$("#"+index).css("background-image","url("+bgs[col]+")");
+			else
+    		$("#"+index).css("border-color",col);
+		}
+	}
+}
+
+function makegrid()
+{
+var ds = "<div class='box' id='";
+var dr = "<div class='row' style='width:"+(dim*40)+"px;'>"; //related to .box size + a few pixels
+var de = "</div>";
+var i,j,str,index,grid='';
+
+	for (j=1; j <= dim; j++)
+  {
+	 grid += dr;
+  	for (i=1; i <= dim; i++)
+  	{
+			index = i+dim*(j-1);
+			str = ds+index+"' title='"+index+"'";
+			if(i==index || (i+dim*(dim-1))==index || j*dim==index || (j-1)*dim+1==index) //edges
+		    	 grid += str+"style='opacity:0.6;filter:alpha(opacity=60);'>"+index+de;
+			else
+		    	 grid += str+"style='opacity:1;filter:alpha(opacity=100);'>"+"<img src='"+bgs[6]+"'>"+de;
+
+		}
+	 grid += de;
+	}
+  	document.getElementById('gridz').innerHTML = grid;
+}
+
+</script>
+</head>
+<body>
+<div>Try: Shift, Ctrl/Alt, click image -> click new square, +/- or z/x</div>
+<div id="green">Green: Last Tile</div>
+<div id="blue">Blue: Last Tile</div>
+<div id="drawsize">Draw: Size</div>
+<div id="tile">Drawing Tile: </div>
+<div id="gridz"><input type="button" value="Join Grid" onclick="makegrid();initializejq();"></div>
+</body>
+</html>

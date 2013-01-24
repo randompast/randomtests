@@ -1,0 +1,60 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <style>
+            body {
+                margin: 0px;
+                padding: 0px;
+            }
+            
+            #myCanvas {
+                border: 1px solid #9C9898;
+            }
+        </style>
+        <script>
+ function loadImages(sources, callback) {
+    var images = {};
+    var loadedImages = 0;
+    var numImages = 0;
+    // get num of sources
+    for (var src in sources) {
+        numImages++;
+    }
+    for (var src in sources) {
+        images[src] = new Image();
+        images[src].onload = function() {
+            if (++loadedImages >= numImages) {
+                callback(images);
+            }
+        };
+        images[src].src = sources[src];
+    }
+}
+
+window.onload = function(images) {
+    var canvas = document.getElementById("myCanvas");
+    var context = canvas.getContext("2d");
+    var size = 20;
+    var border = 2;
+
+    var sources = {
+        darthVader: "http://www.html5canvastutorials.com/demos/tutorials/html5_canvas_image_loader/darth-vader.jpg",
+        yoda: "http://www.html5canvastutorials.com/demos/tutorials/html5_canvas_image_loader/yoda.jpg"
+    };
+
+    loadImages(sources, function(images) {
+        for (var y = 0; y < 30; y++) {
+            for (var x = 0; x < 30; x++) {
+                context.drawImage(images.yoda, x * size + x * border, y * size + y * border, size, size);
+            }
+        }
+    });
+};
+        </script>
+    </head>
+    <body onmousedown="return false;">
+        <canvas id="myCanvas" width="600" height="600">
+        </canvas>
+<?php include_once("../analyticstracking.php"); ?>
+    </body>
+</html>

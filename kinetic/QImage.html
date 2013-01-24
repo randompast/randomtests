@@ -1,0 +1,40 @@
+<head>
+    <script src="http://www.html5canvastutorials.com/libraries/kinetic-v3.8.3.js">
+    </script>
+    <script type="text/javascript" src="kQuantumImage.js">
+    </script>
+
+    <script>
+        window.onload = function(){
+            var stage = new Kinetic.Stage("container", 578, 200);
+            var layer = new Kinetic.Layer();
+ 
+            var imageObj = new Image();
+            imageObj.onload = function(){
+                var image = new Kinetic.QImage({
+                    x: stage.width / 2 - 53,
+                    y: stage.height / 2 - 59,
+                    image: imageObj,
+                    width: 106,
+                    height: 118,
+                    srcx: 10, //try commenting anything starting with src
+                    srcy: 16, //sourceY as in drawImage();
+                    srcwidth: 50, //32
+                    srcheight: 120 //55
+                });
+ 
+                // add the shape to the layer
+                layer.add(image);
+ 
+                // add the layer to the stage
+                stage.add(layer);
+            };
+            imageObj.src = "tiletest/space_guy.png";
+        };
+    </script>
+</head>
+<body onmousedown="return false;">
+    <div id="container">
+    </div>
+<?php include_once("../analyticstracking.php"); ?>
+</body>

@@ -1,0 +1,156 @@
+<html>
+<head>
+    <script src="http://www.html5canvastutorials.com/libraries/kinetic-v3.7.4.js">
+    </script>
+<script type="text/javascript" src="jscolor/jscolor.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+    <script>// Adapted from: http://www.html5canvastutorials.com/labs/html5-canvas-10000-shape-stress-test-with-kineticjs/
+//Please show me anything you create using this!
+window.onload = function() {
+    var stage = new Kinetic.Stage("container", 600, 600);
+    var squaresLayer = new Kinetic.Layer();
+    var squaresGroup = new Kinetic.Group();
+    var colors = ["red", "orange", "yellow", "green", "blue", "cyan", "purple"];
+    var colorz;
+    var colorIndex = 0;
+    var size = 20;
+    var hider = 0;
+    var dim = 30;
+    var dataArray = new Array(dim);
+    var rotateangle = 0;
+    var gridtl = size / 2;
+    var gridxpos = 300;
+    var gridypos = 300;
+    var zheight = 1;
+    var scaleY = 1;
+    var brushSize = 0;
+    var color = "#289124";
+
+
+    for (var x = 0; x < dim; x++) {
+        dataArray[x] = new Array(dim);
+    }
+
+
+    for (var y = 0; y < dim; y++) {
+        for (var x = 0; x < dim; x++) {
+            makesquares(x, y);
+        }
+    }
+
+    for (var y = 0; y < dim; y++) {
+        for (var x = 0; x < dim; x++) {
+            dataArray[x][y] = '#' + Math.floor(Math.random() * 16777215).toString(16);
+        }
+    }
+
+    function changecolor(xcent, ycent) {
+        var xmin = xcent - brushSize < 0 ? 0 : xcent - brushSize;;
+        var xmax = xcent + brushSize >= dim - 1 ? dim - 1 : xcent + brushSize;;
+        var ymin = ycent - brushSize < 0 ? 0 : ycent - brushSize;;
+        var ymax = ycent + brushSize >= dim - 1 ? dim - 1 : ycent + brushSize;;
+
+        for (var y = ymin; y <= ymax; y++) {
+            for (var x = xmin; x <= xmax; x++) {
+                dataArray[x][y] = color;
+            }
+        }
+    }
+
+    function makesquares(x, y) {
+        var xpos = x * size + x;
+        var ypos = y * size + y;
+
+        var color = colors[colorIndex++];
+        if (colorIndex >= colors.length) {
+            colorIndex = 0;
+        }
+
+        var square = new Kinetic.Shape(function() {
+            var canvas = this.getCanvas();
+            var context = this.getContext();
+            context.beginPath();
+            context.fillStyle = dataArray[x][y];
+            context.fillRect(-gridxpos + xpos, -gridypos + ypos, size, size);
+            this.name = x + "," + y;
+            this.xnum = x;
+            this.ynum = y;
+        }, this.name);
+
+        square.on("mouseover", function() {
+            changecolor(this.xnum, this.ynum);
+            squaresLayer.draw();
+            document.getElementById('statusbar').innerHTML = "Box: *" + this.name + "*";
+
+        });
+        squaresGroup.add(square);
+    }
+    squaresLayer.setPosition(gridxpos, gridypos);
+    squaresLayer.add(squaresGroup);
+    stage.add(squaresLayer);
+
+    $(document).keydown(function(e) {
+        switch (e.which) //arrow keys or numpad, Home/End or NP_7/NP_1, Delete/Page Down
+        {
+        case 100:
+        case 37:
+            gridxpos -= size / 3;
+            squaresLayer.draw();
+            break;
+        case 102:
+        case 39:
+            gridxpos += size / 3;
+            squaresLayer.draw();
+            break;
+        case 104:
+        case 38:
+            gridypos -= size / 3;
+            squaresLayer.draw();
+            break;
+        case 98:
+        case 40:
+            gridypos += size / 3;
+            squaresLayer.draw();
+            break;
+        case 46:
+        case 103:
+            brushSize = brushSize <= 0 ? 0 : brushSize - 1;;
+            document.getElementById('statusbar').innerHTML = "brushsize: *" + brushSize + "*";
+            break;
+        case 34:
+        case 105:
+            brushSize = brushSize >= dim ? dim : brushSize + 1;;
+            document.getElementById('statusbar').innerHTML = "brushsize: *" + brushSize + "*";
+            break;
+        case 36:
+            scaleY += 0.1;
+            squaresLayer.setScale(scaleY, scaleY);
+            squaresLayer.draw();
+            break;
+        case 35:
+            scaleY -= 0.1;
+            squaresLayer.setScale(scaleY, scaleY);
+            squaresLayer.draw();
+            break;
+        }
+    });
+
+    $("#colorpicker").change(function() {
+        color = $('#colorpicker').val();
+        document.getElementById('statusbar').innerHTML = "Color: *" + color + "*";
+    });
+};
+    </script>
+</head>
+<body>
+<div>Controls: arrow keys or numpad arrows, Home/End or NP_7/NP_1, Delete/Page Down</div>
+    <div id="statusbar">Box: 
+    </div>
+    <div id="colordic"><input id="colorpicker" class="color {hash:true}" value="#99FF99">
+    </div>
+    <div id="container">
+    </div>
+<?php include_once("../analyticstracking.php"); ?>
+</body>
+</html>

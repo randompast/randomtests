@@ -1,0 +1,296 @@
+<head>
+    <script src="http://www.html5canvastutorials.com/libraries/kinetic-v3.9.2.js">
+    </script>
+    <script type="text/javascript" src="kQuantumImage2.js">
+    </script>
+
+    <script> 
+        function loadImages(sources, callback){
+            var images = {};
+            var loadedImages = 0;
+            var numImages = 0;
+            for (var src in sources) {
+                numImages++;
+            }
+            for (var src in sources) {
+                images[src] = new Image();
+                images[src].onload = function(){
+                    if (++loadedImages >= numImages) {
+                        callback(images);
+                    }
+                };
+                images[src].src = sources[src];
+            }
+        }
+
+/*        function paintbrush(brushsize, grid, tile)
+        {
+          var tS = 32;
+          var top = tile.attrs.y/tS - brushsize;
+          var bottom = tile.attrs.y/tS + brushsize;
+          var left = tile.attrs.x/tS - brushsize;
+          var right = tile.attrs.x/tS + brushsize;
+
+          for(var j=top; j<=bottom; j++)
+            for(var i=left; i<=right; i++)
+              {
+                if(grid[j] && grid[j][i]){
+                grid[j][i].attrs.srcx = tile.attrs.srcx;
+                grid[j][i].attrs.srcy = tile.attrs.srcy;}
+              }
+        }*/
+
+        function paintbrush(brush, grid, tile, hovering)
+        {
+          var tS = 32;
+          var top = tile.attrs.y/tS;
+          var bottom = top + brush.y;
+          var left = tile.attrs.x/tS;
+          var right = left + brush.x;
+
+          for(var j=top; j<bottom; j++)
+            for(var i=left; i<right; i++)
+              {
+                if(grid[j] && grid[j][i])
+                {
+                  if(hovering)
+                  {
+                    grid[j][i].attrs.srcx = brush[0][0][0];
+                    grid[j][i].attrs.srcy = brush[0][0][1];
+                  }
+                  else
+                  {
+                    grid[j][i].attrs.srcx = brush[j-top][i-left][0];
+                    grid[j][i].attrs.srcy = brush[j-top][i-left][1];
+                  }
+                }
+              }
+        }
+
+
+        function makebrush(brush, grid, tile, tS)
+        {
+          if(tile == undefined)
+          {
+            var gridx = brush[0][0][0]/tS;
+            var gridy = brush[0][0][1]/tS;
+          }
+          else
+          {
+            var gridx = tile.attrs.srcx/tS;
+            var gridy = tile.attrs.srcy/tS;
+          }
+
+          for(var j=0; j<brush.y; j++)
+            for(var i=0; i<brush.x; i++)
+              {
+                if(grid[j+gridy] && grid[j+gridy][i+gridx]){
+                  brush[j][i][0] = grid[j+gridy][i+gridx].attrs.srcx;
+                  brush[j][i][1] = grid[j+gridy][i+gridx].attrs.srcy;
+                }
+              }
+        }
+
+        function palletOverlay(rect,brush,tS,overlayguide){
+            rect.attrs.srcwidth = tS*(brush.x);
+            rect.attrs.srcheight = tS*(brush.y);
+            rect.attrs.width = tS*(brush.x);
+            rect.attrs.height = tS*(brush.y);
+            rect.rect.attrs.x = rect.attrs.x; 
+            rect.rect.attrs.y = rect.attrs.y;
+            rect.rect.attrs.width = rect.attrs.width; 
+            rect.rect.attrs.height = rect.attrs.height; 
+
+            overlayguide.draw();
+        }
+ 
+        function initStage(images){
+            var stage = new Kinetic.Stage({container: 'container', width:1200, height:1300});
+            var layer = new Kinetic.Layer();
+            var maplayer = new Kinetic.Layer();
+            var overlayguide = new Kinetic.Layer();
+            var tS = 32;
+            var tSo2 = tS/2;
+            var brushsrcx = 0;
+            var brushsrcy = 0;
+            var brushsize = 0;
+            var brush = [];
+                brush.x = 1;
+                brush.y = 1;
+                for(var j = 0; j<5; j++){
+                  brush[j] = [[0,0],[0,0],[0,0],[0,0],[0,0]];
+                }
+            var hoverdrawing = false;
+
+            //Map (background, initial)
+            var map = new Array();
+            for(var j=0; j<20; j++)
+            {
+              map[j] = new Array();
+              for(var i=0; i<20; i++)
+              {
+                map[j][i] = new Kinetic.QImage({  //This sprite was 3x4 tiles
+                  x: tS*i,
+                  y: tS*j,
+                  image: images.tileSet,
+                  width: tS,
+                  height: tS,
+                  name: "image",
+                  srcx: tS*2, //x source position
+                  srcy: tS*0, //y source position
+                  srcwidth: tS, //source width
+                  srcheight: tS, //source height
+                  //draggable: true
+              });
+
+                map[j][i].on("mousedown", function() {
+                  this.attrs.srcx = brushsrcx;
+                  this.attrs.srcy = brushsrcy;
+                  paintbrush(brush, map, this, hoverdrawing);
+                  maplayer.draw();
+                  });
+                map[j][i].on("mouseover", function() {
+                  rect.attrs.x = this.attrs.x;
+                  rect.attrs.y = this.attrs.y;
+                  palletOverlay(rect,brush,tS,overlayguide);
+                  overlayguide.draw();
+                  if(hoverdrawing == true)
+                    {
+                    this.attrs.srcx = brushsrcx;
+                    this.attrs.srcy = brushsrcy;
+                    paintbrush(brush, map, this, true);
+                    maplayer.draw();
+                    }
+                  });
+                maplayer.add(map[j][i]);
+              } 
+            }
+
+            var tiles = new Array();
+            for(var j=0; j<38; j++)
+            {
+              tiles[j] = new Array();
+              for(var i=0; i<15; i++)
+              {
+                tiles[j][i] = new Kinetic.QImage({  //This sprite was 3x4 tiles
+                  x: tS*i + 640,
+                  y: tS*j,
+                  image: images.tileSet,
+                  width: tS,
+                  height: tS,
+                  name: "image",
+                  srcx: tS*i, //x source position
+                  srcy: tS*j, //y source position
+                  srcwidth: tS, //source width
+                  srcheight: tS, //source height
+              });
+                tiles[j][i].on("mouseover", function() {
+                  rect.attrs.x = this.attrs.x;
+                  rect.attrs.y = this.attrs.y;
+                  palletOverlay(rect,brush,tS,overlayguide);
+                  overlayguide.draw();
+                  });
+
+                tiles[j][i].on("mousedown", function() {
+                  rect.attrs.srcx = this.attrs.srcx;
+                  rect.attrs.srcy = this.attrs.srcy;
+                  makebrush(brush, tiles, this, tS)
+                  palletOverlay(rect,brush,tS,overlayguide);
+                  overlayguide.draw();
+                  });
+                layer.add(tiles[j][i]);
+              } 
+            }
+
+            var rect = new Kinetic.QImage({
+                x: -500,
+                y: -500,
+                image: images.tileSet,
+                width: tS,
+                height: tS,
+                name: "image",
+                srcx: 0, //x source position
+                srcy: 0, //y source position
+                srcwidth: tS, //source width
+                srcheight: tS, //source height
+                alpha: 0.5
+            });
+            rect.rect = new Kinetic.Rect({
+                x: rect.attrs.x,
+                y: rect.attrs.y,
+                width: rect.attrs.width,
+                height: rect.attrs.width,
+                fill: "#00D2FF",
+                stroke: "black",
+                strokeWidth: 4,
+                alpha: 0.2
+            });
+
+            rect.listen(false);
+            rect.rect.listen(false);
+
+            overlayguide.add(rect);
+            overlayguide.add(rect.rect);
+            stage.add(maplayer);  //only the order you add them to the stage determines which is on top
+            stage.add(layer); //Tilemap
+            stage.add(overlayguide);
+
+            document.addEventListener('keydown', function (e) {
+                var keyCode = e.which;
+                if (keyCode == 38 || keyCode == 40 || keyCode == 32) e.preventDefault(); //disables page viewing
+                if (keyCode == 107 || keyCode == 109)
+                {
+                  if (keyCode == 107) brushsize++;
+                  if (keyCode == 109) if(brushsize > 0) brushsize--;
+                  rect.attrs.width = tS*(2*brushsize+1);
+                  rect.attrs.height = tS*(2*brushsize+1);
+                  rect.attrs.centerOffset.x = tS*(2*brushsize+1)/2 - 16;
+                  rect.attrs.centerOffset.y = tS*(2*brushsize+1)/2 - 16;
+                  overlayguide.draw();
+                }
+                if (keyCode == 16)
+                  hoverdrawing = true;
+                if (keyCode == 83 || keyCode == 68)
+                {
+                  if (keyCode == 83) if(brush.y < 5) brush.y++;
+                  if (keyCode == 68) if(brush.x < 5) brush.x++;
+                  console.log(brush.y+", "+brush.x);
+                  palletOverlay(rect,brush,tS,overlayguide);
+                  overlayguide.draw();
+                }
+                if (keyCode == 87 || keyCode == 65)
+                {
+                  if (keyCode == 87) if(brush.y > 1) brush.y--;
+                  if (keyCode == 65) if(brush.x > 1) brush.x--;
+                  palletOverlay(rect,brush,tS,overlayguide);
+                  console.log(brush.y+", "+brush.x);
+                }
+                makebrush(brush, tiles, undefined, tS)
+            });
+            document.addEventListener('keyup', function (e) {
+                var keyCode = e.which;
+                if (keyCode == 16)
+                  hoverdrawing = false;
+            });
+
+        }
+
+
+        window.onload = function(){
+            var sources = {
+                spaceGuy: "tiletest/space_guy.png",
+                //https://github.com/silveira/openpixels/blob/master/open_chars.xcf
+                tileSet: "tiletest/free_tileset_CC.png", //CC-By-SA
+                    //http://silveiraneto.net/tag/tileset/
+//                spaceGuy: "/kineticjs/tiletest/ranger_m.png" //tS by 36, ranger
+                    //http://opengameart.org/content/antifareas-rpg-sprite-set-1-enlarged-w-transparent-background
+            };
+            loadImages(sources, initStage);
+        };
+    </script>
+</head>
+<body onmousedown="return false;">
+    <div id="container">
+    </div>
+<?php include_once("../analyticstracking.php"); ?>
+</body>

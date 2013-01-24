@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - materials - shaders [Phong, Lambert]</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background:#000;
+				color:#fff;
+				padding:0;
+				margin:0;
+				overflow:hidden;
+				font-family:georgia;
+				text-align:center;
+			}
+		</style>
+	</head>
+
+	<body>
+
+	  <script src="../three.min.js"></script>
+	  <script src="../Detector.js"></script>
+   	<script src="../OrbitControls.js"></script>
+
+		<script>
+		
+		  // Parent code:
+		  // http://mrdoob.github.com/three.js/examples/webgl_materials_shaders.html
+
+			var camera, scene, canvasRenderer, webglRenderer, controls, pointer;
+
+			var mesh, zmesh, lightMesh, geometry;
+			var globe, sky, space;
+			
+			var skyTexture, mappedTexture, spaceTexture;
+
+			var directionalLight, pointLight;
+
+			var clock = new THREE.Clock();
+  		window.addEventListener( 'resize', onWindowResize, false );
+			
+			init();
+			animate();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+				
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 50000 );
+//				camera = new THREE.OrthographicCamera( -window.innerWidth/2, window.innerWidth/2, -window.innerHeight/2, window.innerHeight/2, -100, 10000);
+				camera.position.z = 1000;
+
+				scene = new THREE.Scene();
+				controls = new THREE.OrbitControls(camera);
+  			pointer = new THREE.Vector3(0, 0, 0);
+				
+				// LIGHTS
+
+				var ambient = new THREE.AmbientLight( 0x101010 ); //To change the brightness of unlit parts
+				scene.add( ambient );
+
+				pointLight = new THREE.PointLight( 0xeeeeff );
+				scene.add( pointLight );
+
+				// light representation
+
+				sphere = new THREE.SphereGeometry( 10, 16, 8 );
+				lightMesh = new THREE.Mesh( sphere, new THREE.MeshBasicMaterial( { color: 0xffaa00 } ) );
+				lightMesh.scale.set( 0.05, 0.05, 0.05 );
+				lightMesh.position = pointLight.position;
+				scene.add( lightMesh );
+
+				// Textures
+				
+				    // Color, Specular, Bump, Clouds, Night:
+				    // http://www.noirextreme.com/earth
+				var Specular = THREE.ImageUtils.loadTexture( "../Earth-Spec4096.jpg" );
+				var Color = THREE.ImageUtils.loadTexture( "../Earth-Color4096.jpg" );
+				var Bump = THREE.ImageUtils.loadTexture( "../Earth-Topo4096.jpg" );
+//				var Night = THREE.ImageUtils.loadTexture( "../Earth-Night4096.jpg" );
+				var Clouds = THREE.ImageUtils.loadTexture( "../Earth-Clouds2700.png" );
+				
+				    // Space Sky Dome
+				    // http://gnome-look.org/CONTENT/content-files/60106-space-skydome.jpg?PHPSESSID=6
+				var Space = THREE.ImageUtils.loadTexture( "../space-skydome.png" );
+				
+				mappedTexture = new THREE.MeshPhongMaterial( { color: 0xffffff, map: Color, specular: 0xffffff, specularMap: Specular, bumpMap: Bump, bumpScale: 20, shading: THREE.SmoothShading, emissive: 0x111111} );
+
+				skyTexture = new THREE.MeshPhongMaterial( { color: 0xffffff, map: Clouds, transparent: true, bumpMap: Clouds, bumpScale: 5, shading: THREE.SmoothShading} );
+        skyTexture.blending = THREE["CustomBlending"];
+        skyTexture.blendSrc = THREE["SrcAlphaFactor"];
+				skyTexture.blendDst = THREE["SrcAlphaFactor"];
+        skyTexture.blendEquation = THREE.AddEquation;
+        
+        spaceTexture = new THREE.MeshPhongMaterial( { color: 0x333333, map: Space, emissive: 0xaaaaaa, transparent: true} );
+        spaceTexture.side = THREE.BackSide;
+
+        // Create Meshes
+        
+				sphere = new THREE.SphereGeometry( 600, 32, 32 );
+				globe = new THREE.Mesh( sphere, mappedTexture );
+				globe.rotation.y = 0.2;
+
+				sphere = new THREE.SphereGeometry( 605, 32, 32 );
+				sky = new THREE.Mesh( sphere, skyTexture );
+
+				sphere = new THREE.SphereGeometry( 15000, 64, 64 );
+				space = new THREE.Mesh( sphere, spaceTexture );
+
+        scene.add( globe );
+        scene.add( sky );
+        scene.add( space );
+
+        // Add renderer
+					try {
+						webglRenderer = new THREE.WebGLRenderer();
+						webglRenderer.setSize( window.innerWidth, window.innerHeight );
+						webglRenderer.domElement.style.position = "relative";
+						container.appendChild( webglRenderer.domElement );
+						has_gl = 1;
+					} catch (e) {
+					  alert("Oops, webGL broke, get a better browser!");
+					}
+			}
+
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				webglRenderer.setSize( window.innerWidth, window.innerHeight );
+			}
+			
+			function animate() {
+				requestAnimationFrame( animate );
+				render();
+			}
+
+			function render() {
+
+				var timer = 0.0002 * Date.now();
+				
+				lightMesh.position.x = 7000 * Math.cos( timer + 1 );
+				lightMesh.position.z = 7000 * Math.sin( timer + 1);
+
+				sky.rotation.y = timer/30;
+				
+				controls.update( clock.getDelta() );
+				camera.lookAt( pointer );
+	
+        webglRenderer.render( scene, camera );
+
+			}
+		</script>
+
+	</body>
+</html>

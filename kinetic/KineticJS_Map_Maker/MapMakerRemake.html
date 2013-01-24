@@ -1,0 +1,548 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+      canvas {
+        border: 1px solid #9C9898;
+      }
+    </style>
+    <script src="http://www.html5canvastutorials.com/libraries/kinetic-v3.10.3.js"></script>
+    <script>
+
+    var Map = {};
+        Map.tS = 16;
+        Map.MapStage;
+        Map.TileSetStage;
+        Map.moveStage = function(stage, a, b){
+            var x = stage.attrs.offset.x + a;
+            var y = stage.attrs.offset.y + b;
+
+            stage.transitionTo({
+                offset: {
+                  x: x,
+                  y: y
+                },
+                duration: 0.2,
+                easing: "ease-in-out"
+              });
+
+            stage.draw();
+            }
+        Map.MapLayers = [];
+        Map.newLayer = function(){
+          var Layers = Map.MapLayers;
+          Layers[Layers.length -1];
+          Layers.push(new Grid(Layers[0].grid.length, Layers[0].grid[0].length));
+          Layers = Layers[Layers.length-1];
+          Map.MapStage.add(Layers.layer);
+          Map.MapLayers[1].iterategrid(Map.MapLayers[1].RecttoCoord);
+        }
+        Map.Map = {};
+        Map.Map.Scale = 1;
+
+        Map.changeCenter = function(){
+            var scale = Map.Map.Scale;
+            var stage = Map.MapStage;
+            var width = controls.mousepos.x;
+            var height = controls.mousepos.y;
+
+            stage.attrs.offset.x -= (stage.attrs.x - width)/scale;
+            stage.attrs.offset.y -= (stage.attrs.y - height)/scale;
+            stage.attrs.x = width;
+            stage.attrs.y = height;
+        }
+
+        Map.changeScale = function(){
+          if(Map.Map.Scale > 0){
+            var scale = Map.Map.Scale;
+              var stage = Map.MapStage;
+              stage.transitionTo({
+                  scale: {
+                    x: Map.Map.Scale,
+                    y: Map.Map.Scale
+                  },
+                  duration: 0.2,
+                  easing: "ease-out"
+                });
+//            stage.setScale(scale);
+              stage.draw();
+            }
+            else
+              Map.Map.Scale = 0.1;
+        }
+
+    var images = [];
+    var activeLayerindex;
+    var activeTile = {};
+        activeTile.x = 0;
+        activeTile.y = 0;
+        activeTile.image = 0;
+
+    Map.MapLayers.push(new Grid(32,32));
+    Map.TSetLayer = new Grid(10,10); //(width, height)
+      Map.TSetLayer.isTileSet = true;
+      Map.TSetLayer.spacing = 1;
+
+    var controls = {};
+        controls.mousedown = false;
+        controls.mousepos = {};
+        controls.mousepos.x = 0;
+        controls.mousepos.y = 0;
+        controls.isOnMapStage = false;
+
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+      function Grid(n,m){ //Start of the Grid Class
+          this.name = "myLayer";          
+          this.layer = new Kinetic.Layer();
+          this.tileSetIndex = 0;
+          this.spacing = 0;
+          this.isTileSet = false;
+          
+          this.grid = [];
+          for ( var i = 0; i < n; i++ ) {
+            this.grid[i] = Array(m);  
+          }
+          
+          this.displayRects = function(bool)
+          {
+            this.iterategrid((function (object, i, j){
+                if(object.grid[i][j].shapeType == "Rect")
+                  object.grid[i][j].attrs.visible = bool;
+              })); 
+          }
+
+          this.addrowscols = function(c,r){
+            //Appends new rows +. columns
+            if(c>0 || r>0){
+              for ( var i = 0; i < c; i++ ) {
+                  this.grid.push(Array(this.grid[0].length));
+              }
+
+              for ( var i = 0; i < this.grid.length; i++ ) {
+                for ( var j = 0; j < r; j++ ) {
+                  this.grid[i].push(null);
+                }
+              }
+              
+              this.iterategrid((function (object, i,j){
+                  if( object.grid[i] && (object.grid[i][j] == null)){
+                    if(object.isTileSet == true)
+                      object.ImagetoCoord(object, i, j);
+                    if(object.isTileSet == false)
+                      object.RecttoCoord(object, i, j);
+                 }
+                }));
+            }
+          } //End addrowscols
+          
+          this.removerowscols = function(c,r){
+            //Removes rows +. columns
+
+            if(c>0 || r>0){
+              var g1 = this.grid.length-1;
+            
+              for ( var i = g1; i >= g1-c+1; i-- ) {
+                for ( var j = 0; j < this.grid[i].length; j++ ){
+                  this.layer.remove(this.grid[i][j]);
+                }
+                 this.grid.pop();
+              }//columns
+              
+              var g1 = this.grid.length;
+              var g2 = this.grid[0].length-1;
+              for ( var i = 0; i < g1; i++ ) {
+                for ( var j = g2; j > g2-r; j-- ){
+                  this.layer.remove(this.grid[i][j]);
+                  this.grid[i].pop();
+                }
+              }//rows
+          
+              this.layer.draw();
+            }
+          } //End removerowscols 
+                 
+          this.iterategrid = function(callback){ //iterates through the grid and acts on a callback
+            for ( var i = 0; i < this.grid.length; i++ ) {
+              for ( var j = 0; j < this.grid[0].length; j++ ) {            
+                callback(this, i,j);
+              }
+            }
+            this.layer.draw();
+          } //End iterategrid
+
+          this.moveGrid = function(x,y){ //moves every element of the grid
+            this.layer.attrs.x += x;
+            this.layer.attrs.y += y;
+            this.layer.draw();
+          } //End moveGrid
+          
+          this.spacingGrid = function(a){
+            var object = this;
+            object.spacing += a;
+            this.iterategrid((function (object, i,j){
+                object.grid[i][j].attrs.x += i*a;
+                object.grid[i][j].attrs.y += j*a;
+              })); 
+          } //end spacingGrid
+
+         //IMAGE START**************************************************************
+          this.ImagetoCoord = function(object, i,j){
+            //Make an array index an image
+            var xpos =  Map.tS * i+i*object.spacing;
+            var ypos =  Map.tS * j+j*object.spacing;
+            
+            if(object.grid[i][j]) {
+              xpos = object.grid[i][j].attrs.x;
+              ypos = object.grid[i][j].attrs.y;
+              object.layer.remove(object.grid[i][j]);
+            }
+              
+            object.grid[i][j] = new Kinetic.Image({
+              x: xpos,
+              y: ypos,
+              image: images[Map.TSetLayer.tileSetIndex],
+              width: Map.tS,
+              height: Map.tS,
+              name: "image",
+              i: i,
+              j: j,
+              crop: {	x: Map.tS * i, //x source position
+                			y: Map.tS * j, //y source position
+                			width: Map.tS, //source width
+                			height: Map.tS //source height
+              			},
+              index: 0
+            });
+            object.grid[i][j].attrs.index = (object.grid[i][j].attrs.crop.x/Map.tS)+Map.TSetLayer.grid.length*(object.grid[i][j].attrs.crop.y/Map.tS)+1;
+               
+
+            object.layer.add(object.grid[i][j]);
+
+            object.grid[i][j].on("mousemove", function() {
+              if(object.isTileSet == false && controls.mousedown == true){
+                object.grid[i][j].attrs.crop.x = activeTile.x;
+                object.grid[i][j].attrs.crop.y = activeTile.y;
+                object.grid[i][j].attrs.image = images[Map.TSetLayer.tileSetIndex];
+                object.grid[i][j].attrs.index = (object.grid[i][j].attrs.crop.x/Map.tS)+Map.TSetLayer.grid.length*(object.grid[i][j].attrs.crop.y/Map.tS)+1;
+                object.grid[i][j].attrs.imageindex = Map.TSetLayer.tileSetIndex;
+                object.layer.draw();
+              }
+            });
+            object.grid[i][j].on("mousedown", function() {
+              if(object.isTileSet == false){
+                object.grid[i][j].attrs.crop.x = activeTile.x;
+                object.grid[i][j].attrs.crop.y = activeTile.y;
+                object.grid[i][j].attrs.image = images[Map.TSetLayer.tileSetIndex];
+                object.grid[i][j].attrs.index = (object.grid[i][j].attrs.crop.x/Map.tS)+Map.TSetLayer.grid.length*(object.grid[i][j].attrs.crop.y/Map.tS)+1;
+                object.grid[i][j].attrs.imageindex = Map.TSetLayer.tileSetIndex;
+                object.layer.draw();
+              }
+            });
+            
+            object.grid[i][j].on("mousedown mouseup", function() {
+              if(object.isTileSet == true){
+                document.getElementById("CurrentTile").value = i+", "+j+": "+object.tileSetIndex;
+                activeTile.x = object.grid[i][j].attrs.crop.x;
+                activeTile.y = object.grid[i][j].attrs.crop.y;
+                activeTile.image = object.tileSetIndex;
+              }
+            });
+
+           } //End ImagetoCoord
+         //IMAGE END**************************************************************
+         
+         
+         //RECT START**************************************************************
+         this.RecttoCoord = function(object, i,j)
+          {
+            //Make an array index a Rect
+            var xpos = Map.tS * i+i*object.spacing;
+            var ypos = Map.tS * j+j*object.spacing;
+
+            if(object.grid[i][j]) {
+              xpos = object.grid[i][j].attrs.x;
+              ypos = object.grid[i][j].attrs.y;
+              object.layer.remove(object.grid[i][j]);
+            }
+           
+
+            object.grid[i][j] = new Kinetic.Rect({
+              x: xpos,
+              y: ypos,
+              width: Map.tS,
+              height: Map.tS,
+              name: "rect",
+              i: i,
+              j: j,
+              fill: "#"+Math.floor(Math.random()*10)+""+Math.floor(Math.random()*10)+""+Math.floor(Math.random()*10),
+              stroke: "black",
+              strokeWidth: 1,
+              index: 0,
+              imageindex: -1
+            });
+
+            object.grid[i][j].on("mouseover", function() {
+              document.getElementById("mapPosition").value = i+", "+j;
+              object.layer.draw();
+            });                
+     
+            object.grid[i][j].on("mouseover", function() {
+              if(controls.mousedown == true){ //allows for drag and draw
+                object.ImagetoCoord(object, i, j);
+                object.grid[i][j].attrs.crop.x = activeTile.x;
+                object.grid[i][j].attrs.crop.y = activeTile.y;
+                object.grid[i][j].attrs.index = (object.grid[i][j].attrs.crop.x/Map.tS)+Map.TSetLayer.grid.length*(object.grid[i][j].attrs.crop.y/Map.tS)+1;
+                object.grid[i][j].attrs.imageindex = Map.TSetLayer.tileSetIndex;
+                object.layer.draw();
+              }
+            });
+            object.grid[i][j].on("mousedown", function() {
+                object.ImagetoCoord(object, i, j);
+                object.grid[i][j].attrs.crop.x = activeTile.x;
+                object.grid[i][j].attrs.crop.y = activeTile.y;
+                object.grid[i][j].attrs.index = (object.grid[i][j].attrs.crop.x/Map.tS)+Map.TSetLayer.grid.length*(object.grid[i][j].attrs.crop.y/Map.tS)+1;
+                object.grid[i][j].attrs.imageindex = Map.TSetLayer.tileSetIndex;
+                object.layer.draw();
+            });
+            
+            object.layer.add(object.grid[i][j]);
+            return object.grid[i][j];
+           } //End Recttocoord
+         //RECT END**************************************************************
+         
+         
+          this.saveGrid = function(){
+            var Layer = {};
+                Layer.index = [];
+                Layer.image = [];
+                Layer.name = this.name;
+                Layer.Zindex = this.layer.getZIndex();
+              this.iterategrid((function (object, i,j){
+                Layer.index.push(object.grid[i][j].attrs.index);
+                Layer.image.push(object.grid[i][j].attrs.imageindex);
+              }));
+            console.log(Layer);
+          }//End saveGrid
+    
+        } //End Grid
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
+      function initeditor(){
+        stageInit(); 
+        loadImages(); 
+        Map.MapLayers[0].iterategrid(Map.MapLayers[0].RecttoCoord);
+        Map.TSetLayer.iterategrid(Map.TSetLayer.ImagetoCoord);
+        Listeners();
+        DOMLayerList();
+      }
+
+      function stageInit() {
+        //Initialize the Stage
+        Map.MapStage = new Kinetic.Stage({
+          container: "container",
+          width: window.innerWidth*0.6,
+          height: window.innerHeight
+        });
+        Map.MapStage.id = "hey, look, a stage";
+        Map.MapStage.add(Map.MapLayers[0].layer);
+        Map.MapStage.on("mousemove", function() {
+            var mousePos = this.getMousePosition();
+            controls.mousepos.x = mousePos.x;
+            controls.mousepos.y = mousePos.y;
+          });
+        Map.MapStage.on("mouseout", function() {
+            controls.mousedown = false;
+          });
+
+        Map.TileSetStage = new Kinetic.Stage({
+          container: "container2",
+          width: window.innerWidth*0.4,
+          height: window.innerHeight*0.5
+        });
+        Map.TileSetStage.add(Map.TSetLayer.layer);
+      } //end init
+      
+      function loadImages(){
+        images.push(new Image());
+        images.push(new Image());
+        images.push(new Image());
+        images.push(new Image());
+        images[0].src = "../tiletest/free_tileset_CC.png"
+        images[3].src = "http://www.html5canvastutorials.com/demos/assets/yoda.jpg";
+        images[1].src = "http://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Great_Wave_off_Kanagawa2.jpg/300px-Great_Wave_off_Kanagawa2.jpg";
+        images[2].src = "http://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Oeschinen.jpg/300px-Oeschinen.jpg";
+      }
+      
+      function imageList(){
+        var List = [];
+        for(var i=0; i<images.length; i++)
+        { 
+          List.push({ name: images[i].name, source: images[i].src, index: i });
+        }
+        console.log(List);
+      }
+
+      function pushnewURL(){
+      //Add a new URL to images[]
+        var url = document.getElementById('newURL').value;
+        var last = images.length;
+
+        for(var i = 0; i<last; i++){
+          if(images[i].src == url){
+            console.log("Image already exists at index:"+i);
+            return;
+          }
+        }
+                
+        images.push(new Image());
+        images[last].src = url;
+        console.log("Image added");
+      } //End pushnewURL
+           
+      function resizeTileSeztStage(a){
+        //Changes the TileSet and resizes the stage.
+        if(images.length > a)
+        {
+          var TileS = Map.TSetLayer;
+          var imgWidth = images[a].width + Math.floor(images[a].width/Map.tS)*TileS.spacing + 2*TileS.layer.attrs.x;
+          var imgHeight = images[a].height + Math.floor(images[a].height/Map.tS)*TileS.spacing + 2*TileS.layer.attrs.y;
+          var newcols = Math.floor(images[a].width/Map.tS);
+          var newrows = Math.floor(images[a].height/Map.tS);
+
+          TileS.removerowscols(TileS.grid.length -1, TileS.grid[0].length);
+          TileS.tileSetIndex = a;
+
+          TileS.addrowscols( newcols, newrows );
+          TileS.iterategrid( TileS.ImagetoCoord );
+
+          Map.TileSetStage.draw();
+        }
+       }//End Change TileSet
+
+      function DOMLayerList(){
+        
+      }
+ 
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+function Listeners(){
+
+    document.addEventListener( 'keydown', function (e) { 
+        var keyCode = e.which;
+        if ( keyCode == 38 || keyCode == 40 || keyCode == 32 ) e.preventDefault(); //disables page scrolling
+        if (keyCode == 49) resizeTileSeztStage(0); //1
+        if (keyCode == 50) resizeTileSeztStage(1); //2
+        if (keyCode == 51) resizeTileSeztStage(2); //3
+        if (keyCode == 52) resizeTileSeztStage(3); //4
+        
+        if (keyCode == 37) Map.moveStage(Map.MapStage, -100,0);//left arrow
+        if (keyCode == 38) Map.moveStage(Map.MapStage, 0,-100);//up arrow
+        if (keyCode == 39) Map.moveStage(Map.MapStage, 100,0);//right arrow
+        if (keyCode == 40) Map.moveStage(Map.MapStage, 0,100);//down arrow
+
+    });
+
+    document.addEventListener('mousedown', function () {
+        controls.mousedown = true;
+    });
+    document.addEventListener('mouseup', function () {
+        controls.mousedown = false;
+    });
+
+    document.addEventListener("mousewheel", function (e) {
+        if(controls.isOnMapStage == true){
+          e.preventDefault();
+          Map.changeCenter();
+          Map.Map.Scale += e.wheelDelta/1200;
+          Map.changeScale();
+        }
+        if(controls.isOTileStage == true ){
+          Map.moveStage(Map.TileSetStage, 0, -e.wheelDelta/1.2);
+        }
+    });
+    document.addEventListener("onmousewheel", function (e) { //IE, Opera, Safari?
+        if(controls.isOnMapStage == true){
+          e.preventDefault();
+          Map.changeCenter();
+          Map.Map.Scale += e.wheelDelta/1200;
+          Map.changeScale();
+        }
+    });
+    document.addEventListener("DOMMouseScroll", function (e) { //FF
+        if(controls.isOnMapStage == true){
+          e.preventDefault();
+          Map.changeCenter();
+          Map.Map.Scale -= e.detail/10;
+          Map.changeScale();
+        }
+        if(controls.isOTileStage == true ){
+          Map.moveStage(Map.TileSetStage, 0, -e.detail*30);
+        }
+    });
+    document.getElementById("container").getElementsByTagName('div')[0].addEventListener("mouseover", 
+    function (e){
+      controls.isOnMapStage = true;
+    }, false);
+    document.getElementById("container").getElementsByTagName('div')[0].addEventListener("mouseout", 
+    function (e){
+      controls.isOnMapStage = false;
+      controls.mousedown = false;
+    }, false);
+    document.getElementById("container2").getElementsByTagName('div')[0].addEventListener("mouseover", 
+    function (e){
+      controls.isOTileStage = true;
+    }, false);
+    document.getElementById("container2").getElementsByTagName('div')[0].addEventListener("mouseout", 
+    function (e){
+      controls.isOTileStage = false;
+      controls.mousedown = false;
+    }, false);    
+    
+    window.onresize = function(event){
+      var stage1 = Map.MapStage;
+      var stage2 = Map.TileSetStage;
+      var controls = document.getElementById("controls");
+      stage1.setSize(window.innerWidth*0.6, window.innerHeight);
+      stage2.setSize(window.innerWidth*0.4, window.innerHeight*0.5);
+      controls.style.height = window.innerHeight*0.5;
+    }
+}
+
+    </script>
+  </head>
+  <body onload="initeditor()" style="overflow:hidden; height:100%; margin:0;">
+      <div id="container" style="float:left; margin-right:0px"></div>
+
+      <div id="box" style="float:left; width:40%; height:100%; position:relative: margin:0;">
+        <div id="controls" style="height:380px;">
+          <button onclick="Map.MapLayers[0].tileSetIndex = (Map.MapLayers[0].tileSetIndex == 2)?1:2;">Change Image</button>
+          <input type="text" id='newURL' value="http://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Oeschinen.jpg/300px-Oeschinen.jpg"/>
+          <button onclick="pushnewURL()">New URL</button>
+          <button onclick="Map.newLayer()">Add Layer</button>
+          <button onclick="Map.MapLayers[0].spacingGrid(4)">Add Spacing</button>
+          <button onclick="Map.MapLayers[0].addrowscols(1,2)">Add RowsCols</button>
+          <textarea rows="1" cols="8" id="CurrentTile"></textarea>
+          <textarea rows="1" cols="8" id="mapPosition"></textarea>
+
+          <div id="layerlist">
+          </div>
+        </div>
+      
+        <div id="container2" style="float:left;"></div>
+      </div>
+
+  </body>
+</html>
+

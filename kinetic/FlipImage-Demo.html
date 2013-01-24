@@ -1,0 +1,43 @@
+<head>
+    <script src="http://www.html5canvastutorials.com/libraries/kinetic-v3.8.4.js">
+    </script>
+    <script>
+//based off of:
+//http://www.html5canvastutorials.com/kineticjs/html5-canvas-kineticjs-image-tutorial/
+//and
+//http://www.html5canvastutorials.com/kineticjs/html5-canvas-kineticjs-scale-animation-tutorial/
+//for
+//http://stackoverflow.com/questions/9786694/flipping-an-image-in-kineticjs
+        window.onload = function(){
+            var stage = new Kinetic.Stage("container", 578, 500);
+            var layer = new Kinetic.Layer();
+ 
+            var imageObj = new Image();
+            imageObj.onload = function(){
+                var image = new Kinetic.Image({
+                    x: stage.width / 2 + 53,
+                    y: stage.height / 2 + 59,
+                    image: imageObj,
+                    width: 300,
+                    height: 200,
+                    draggable: true
+                });
+ 
+                image.scale.y =-1;
+                image.scale.x =-1;
+
+                // add the shape to the layer
+                layer.add(image);
+ 
+                // add the layer to the stage
+                stage.add(layer);
+            };
+            imageObj.src = "images/Machovka_yellow_car.png";
+        };
+    </script>
+</head>
+<body onmousedown="return false;">
+    <div id="container">
+    </div>
+<?php include_once("../analyticstracking.php"); ?>
+</body>

@@ -1,0 +1,142 @@
+<head>
+    <script src="http://www.html5canvastutorials.com/libraries/kinetic-v3.6.4.js">
+    </script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+    <script>
+        window.onload = function(){
+            var stage = new Kinetic.Stage("container", 600, 600);
+            var squaresLayer = new Kinetic.Layer();
+            var tooltipLayer = new Kinetic.Layer();
+            var colors = ["red", "orange", "yellow", "green", "blue", "cyan", "purple"];
+						var colorz;
+            var colorIndex = 0;
+						var size = 20;
+						var hider = 0;
+						var dim = 20;
+						var dataArray = new Array();
+						var rotateangle = 1;
+						var gridtl = size/2;
+						var gridpos = gridtl;
+						var zheight = 1;
+
+
+//            for (var y = 0; y < dim; y++) {
+            	for (var x = 0; x < dim; x++) {
+								dataArray[x] = new Array();
+            	}
+//						}
+
+            for (var y = 0; y < dim; y++) {
+            	for (var x = 0; x < dim; x++) {
+								makething(x, y);
+            	}
+						}
+
+            function makething(x, y){
+										var xpos = x*size;
+										var ypos = y*size;
+
+                    var color = colors[colorIndex++];
+                    if (colorIndex >= colors.length) {
+                        colorIndex = 0;
+                    }
+
+                    var square = new Kinetic.Shape(function(){
+                        var canvas = this.getCanvas();
+                        var context = this.getContext();
+                        context.beginPath();
+												context.translate(canvas.width / 2, canvas.height / 2);
+												context.rotate(rotateangle * Math.PI / 4);
+                        context.fillStyle = this.colorz;
+												this.colorz = color;
+                        context.fillRect(xpos - gridpos, ypos - gridpos, size, size);
+												this.name = x+","+y;
+                    }, this.name);
+ 
+                    square.on("mouseover", function(){
+                        // update tooltip
+												square.colorz = square.colorz == "yellow" ? "#00D2FF" : "yellow";;
+												squaresLayer.draw();
+                        var mousePos = stage.getMousePosition();
+                        tooltip.x = mousePos.x;
+                        tooltip.y = mousePos.y;
+                        tooltip.text = "pos: "+ this.name +" color: " + color;
+                        tooltip.show();
+                        tooltipLayer.draw();
+                    });
+ 
+                    square.on("mouseout", function(){
+                        tooltip.hide();
+                        tooltipLayer.draw();
+                    });
+ 
+                    square.name = "square";
+ 
+                    squaresLayer.add(square);
+                }
+ 
+            var tooltip = new Kinetic.Shape(function(){
+                var context = this.getContext();
+                context.beginPath();
+                context.fillStyle = "black";
+                context.fillRect(5, 5, 200, 30);
+                context.font = "12pt Calibri";
+                context.fillStyle = "white";
+                context.textBaseline = "top";
+                context.fillText(this.text, 10, 10);
+            });
+ 
+            // add custom property
+            tooltip.text = "";
+            tooltip.name = "tooltip";
+ 
+            // hide tooltip
+            tooltip.hide();
+ 
+            tooltipLayer.add(tooltip);
+ 
+            stage.add(squaresLayer);
+            stage.add(tooltipLayer);
+						stage.setScale(1, zheight);
+
+/* 						document.getElementById("rotate").addEventListener("click", function(){
+								rotateangle += 0.1;
+                squaresLayer.draw();
+            }, false);
+*/
+
+			$(document).keydown(function(e){
+				switch(e.which) //minus key "-" or z
+				{
+					case 100: 
+					case 37: 
+						rotateangle +=0.1;
+            squaresLayer.draw();
+						break;
+					case 102:
+					case 39: 
+						rotateangle -=0.1;
+            squaresLayer.draw();
+						break;
+					case 104:
+					case 38: 
+						gridpos +=size;
+            squaresLayer.draw();
+						break;
+					case 98:
+					case 40: 
+						gridpos -=size;
+            squaresLayer.draw();
+						break;
+				}
+			});
+        };
+    </script>
+</head>
+<body>
+    <div id="rotate">NumPad_(4,6,8,2) to rotate/move
+    </div>
+    <div id="container">
+    </div>
+</body>

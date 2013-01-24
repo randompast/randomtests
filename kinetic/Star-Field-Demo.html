@@ -1,0 +1,40 @@
+
+<!DOCTYPE HTML>
+<html>
+    <head>
+         <script src="http://www.html5canvastutorials.com/libraries/kinetic-v3.8.2.js"></script>
+        <script type="text/javascript" src="kquantumsquiggle.js"></script>
+    <script>
+        window.onload = function(){
+            var stage = new Kinetic.Stage("container", 800, 800);
+            var layer = new Kinetic.Layer();
+ 
+            var star = new Array();
+            for(var i=0; i<50; i++)
+            {
+              star[i] = new Kinetic.QSquiggle({
+                  x: Math.floor(Math.random()*(stage.width - 80))+40,
+                  y: Math.floor(Math.random()*(stage.height- 80))+40,
+                  points: Math.floor(Math.random()*8)+4,
+                  innerRadius: Math.floor(Math.random()*80)+30,
+                  outerRadius: -Math.floor(Math.random()*80)-40,
+                  fill: "yellow",
+                  stroke: "black",
+                  strokeWidth: 3,
+              });
+              star[i].draggable(true);
+               // add the shape to the layer
+              layer.add(star[i]);
+            } 
+            // add the layer to the stage
+            stage.add(layer);
+
+        };
+    </script>
+</head>
+<body onmousedown="return false;" style="background-color:#002233">
+    <div id="container">
+    </div>
+<?php include_once("../analyticstracking.php"); ?>
+</body>
+
