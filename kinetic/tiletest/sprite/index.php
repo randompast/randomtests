@@ -7,7 +7,7 @@
             }
 
         </style>
-<script src="http://www.html5canvastutorials.com/libraries/kinetic-v3.8.3.js"></script>
+<script src="barkinetic-v3.8.3.js"></script>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script> 
         function loadImages(sources, callback){
