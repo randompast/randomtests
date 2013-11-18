@@ -75,6 +75,7 @@ var url = document.URL;
 console.log(url);
 console.log(window.top.location.href);
 console.log(document.referrer);
+console.log(window.parent.location.search.substring(1));
 url = window.top.location.href;
 if(url.match("quantumfractal.info") != null){
 	var index = url.indexOf("kineticjs");
