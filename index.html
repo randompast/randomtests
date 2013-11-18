@@ -200,9 +200,14 @@
 	  </div>
     
 <script>
-//Why do they add this?
-el = document.getElementsByTagName("frame");
-el[1].parentNode.removeChild(el[1]);
+var url = document.URL;
+if(url.match("quantumfractal.info") != null){
+	var index = url.indexOf("kineticjs");
+	var newurl = "http://randompast.github.io/randomtests/"+url.substr(index);
+	newurl = newurl.replace("php", "html")
+	console.log(newurl);
+	window.location = newurl;
+}
 </script>    
 	</body>
 </html>
