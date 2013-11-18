@@ -70,6 +70,15 @@
 		</style>
 	</head>
 	<body>
+<script>
+var url = document.URL;
+if(url.match("quantumfractal.info") != null){
+	var index = url.indexOf("kineticjs");
+	var newurl = "http://randompast.github.io/randomtests/"+url.substr(index);
+	newurl = newurl.replace("php", "html")
+	top.frames["mail"].location.href = newurl;
+}
+</script>
 
 
 
@@ -198,17 +207,6 @@
 
 		  </script>
 	  </div>
-    
-<script>
-var url = document.URL;
-if(url.match("quantumfractal.info") != null){
-	var index = url.indexOf("kineticjs");
-	var newurl = "http://randompast.github.io/randomtests/"+url.substr(index);
-	newurl = newurl.replace("php", "html")
-	console.log(newurl);
-	window.location = newurl;
-}
-</script>    
-	</body>
+  	</body>
 </html>
 
