@@ -200,7 +200,9 @@
 	  </div>
     
 <script>
-document.getElementByTag("frameset").innerHTML = "";
+//Why do they add this?
+el = document.getElementsByTagName("frame");
+el[1].parentNode.removeChild(el[1]);
 </script>    
 	</body>
 </html>
